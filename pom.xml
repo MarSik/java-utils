@@ -11,6 +11,7 @@
     <modules>
         <module>bugzilla</module>
         <module>assembly</module>
+        <module>configuration</module>
     </modules>
 
     <repositories>
