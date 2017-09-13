@@ -13,6 +13,8 @@
         <module>assembly</module>
         <module>configuration</module>
         <module>db</module>
+        <module>uuid</module>
+        <module>functional</module>
     </modules>
 
     <repositories>
