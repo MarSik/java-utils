@@ -9,8 +9,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.marsik.bugautomation.facts.BugzillaBugFlag;
-
 public class BugProxy {
     private final Map<String, Object> map;
     private final Set<BugzillaBugFlag> flags = new HashSet<>();
