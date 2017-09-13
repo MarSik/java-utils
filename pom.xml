@@ -12,6 +12,7 @@
         <module>bugzilla</module>
         <module>assembly</module>
         <module>configuration</module>
+        <module>db</module>
     </modules>
 
     <repositories>
