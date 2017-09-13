@@ -15,6 +15,7 @@
         <module>db</module>
         <module>uuid</module>
         <module>functional</module>
+        <module>json</module>
     </modules>
 
     <repositories>
