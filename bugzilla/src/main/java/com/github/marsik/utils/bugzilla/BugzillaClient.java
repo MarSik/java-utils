@@ -2,11 +2,13 @@ package com.github.marsik.utils.bugzilla;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -66,7 +68,7 @@ public class BugzillaClient {
             return this;
         }
 
-        public Map<String, Object> call() {
+        public CallDictResult call() {
             Map<String, Object> flatArgs = new HashMap<>();
             for (String key: arguments.keySet()) {
                 Collection<Object> values = arguments.get(key);
@@ -84,10 +86,10 @@ public class BugzillaClient {
             Object[] callArgs = new Object[] {flatArgs};
             log.info("Calling bugzilla method {} with args {}", method, callArgs);
             try {
-                return (Map<String,Object>)client.execute(method, callArgs);
+                return new CallDictResult((Map<String,Object>)client.execute(method, callArgs));
             } catch (XmlRpcException e) {
                 log.error("Bugzilla RPC call failed: {}", e);
-                return Collections.emptyMap();
+                return new CallDictResult(Collections.emptyMap());
             }
         }
     }
@@ -97,12 +99,11 @@ public class BugzillaClient {
         client = getClient();
 
         if (authorizationCallback != null) {
-            Map<String, Object> ret = null;
-            ret = new Call("User.login")
+            CallDictResult ret = new Call("User.login")
                     .argument("login", authorizationCallback.getName())
                     .argument("password", authorizationCallback.getPassword())
                     .call();
-            token = (String)ret.get("token");
+            token = ret.getAs("token", String.class);
         }
 
         return true;
@@ -120,7 +121,7 @@ public class BugzillaClient {
 
     public String getBugzillaVersion() {
         checkLoggedIn();
-        return (String)(new Call("Bugzilla.version").call().get("version"));
+        return new Call("Bugzilla.version").call().getAs("version", String.class);
     }
 
     private void checkLoggedIn() {
@@ -133,11 +134,11 @@ public class BugzillaClient {
     @SuppressWarnings("unchecked")
     public Iterable<BugProxy> searchBugs(Multimap<String, Object> params) {
         checkLoggedIn();
-        Map<String, Object> ret = new Call("Bug.search")
+        CallDictResult ret = new Call("Bug.search")
                 .arguments(params)
                 .call();
 
-        Collection<Map<String,Object>> bugs = Arrays.asList((Object[]) ret.get("bugs"))
+        Collection<Map<String,Object>> bugs = ret.getList("bugs")
                 .stream().map(o -> (Map<String, Object>)o).collect(Collectors.toList());
 
         return bugs.stream().map(BugProxy::new).collect(Collectors.toList());
@@ -146,12 +147,12 @@ public class BugzillaClient {
     @SuppressWarnings("unchecked")
     public Iterable<BugProxy> getBugs(Collection<String> ids) {
         checkLoggedIn();
-        Map<String, Object> ret = new Call("Bug.get")
+        CallDictResult ret = new Call("Bug.get")
                 .argument("ids", new ArrayList<>(ids))
                 .argument("permissive", true)
                 .call();
 
-        Collection<Map<String,Object>> bugs = Arrays.asList((Object[]) ret.get("bugs"))
+        Collection<Map<String,Object>> bugs = ret.getList("bugs")
                 .stream().map(o -> (Map<String, Object>)o).collect(Collectors.toList());
 
         return bugs.stream().map(BugProxy::new).collect(Collectors.toList());
@@ -160,7 +161,7 @@ public class BugzillaClient {
     @SuppressWarnings("unchecked")
     public Iterable<BugProxy> getExtra(Collection<String> ids) {
         checkLoggedIn();
-        Map<String, Object> ret = new Call("Bug.get")
+        CallDictResult ret = new Call("Bug.get")
                 .argument("ids", new ArrayList<>(ids))
                 .argument("permissive", true)
 
@@ -169,9 +170,38 @@ public class BugzillaClient {
                 .argument("include_fields", "external_bugs")
                 .call();
 
-        Collection<Map<String,Object>> bugs = Arrays.asList((Object[]) ret.get("bugs"))
+        Collection<Map<String,Object>> bugs = ret.getList("bugs")
                 .stream().map(o -> (Map<String, Object>)o).collect(Collectors.toList());
 
         return bugs.stream().map(BugProxy::new).collect(Collectors.toList());
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<CallDictResult> getComments(Collection<String> bzIds, Instant since) {
+        checkLoggedIn();
+        CallDictResult ret = new Call("Bug.comments")
+                .argument("ids", new ArrayList<>(bzIds))
+                .argument("permissive", true)
+                .argument("new_since", since)
+                .call();
+
+        CallDictResult bugs = ret.get("bugs");
+        List<CallDictResult> comments = new ArrayList<>();
+
+        return bugs.keySet().stream()
+                .map(k -> bugs.get(k).getDictList("comments"))
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+    }
+
+    @SuppressWarnings("unchecked")
+    public Iterable<CallDictResult> getHistory(Collection<String> bzIds) {
+        checkLoggedIn();
+        CallDictResult ret = new Call("Bug.history")
+                .argument("ids", new ArrayList<>(bzIds))
+                .argument("permissive", true)
+                .call();
+
+        return ret.getDictList("bugs");
     }
 }
