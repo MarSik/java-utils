@@ -2,9 +2,9 @@ package com.github.marsik.utils.bugzilla;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Date;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,8 +15,6 @@ import java.util.stream.Collectors;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -179,11 +177,15 @@ public class BugzillaClient {
     @SuppressWarnings("unchecked")
     public List<CallDictResult> getComments(Collection<String> bzIds, Instant since) {
         checkLoggedIn();
-        CallDictResult ret = new Call("Bug.comments")
+        Call call = new Call("Bug.comments")
                 .argument("ids", new ArrayList<>(bzIds))
-                .argument("permissive", true)
-                .argument("new_since", since)
-                .call();
+                .argument("permissive", true);
+
+        if (since != null) {
+            call = call.argument("new_since", Date.from(since));
+        }
+
+        CallDictResult ret = call.call();
 
         CallDictResult bugs = ret.get("bugs");
         List<CallDictResult> comments = new ArrayList<>();
