@@ -4,6 +4,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Date;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,8 +29,14 @@ public class BugzillaClient {
     private AuthorizationCallback authorizationCallback;
     private String token;
 
+    private int timeout = 30000;
+
     public BugzillaClient(String baseUrl) throws MalformedURLException {
         xmlRpcUrl = new URL(baseUrl + "/xmlrpc.cgi");
+    }
+
+    public void setTimeout(int millis) {
+        this.timeout = millis;
     }
 
     private XmlRpcClient getClient() {
@@ -36,7 +44,7 @@ public class BugzillaClient {
         config.setServerURL(xmlRpcUrl);
         config.setContentLengthOptional(true);
         config.setEnabledForExtensions(true);
-        config.setReplyTimeout(30000);
+        config.setReplyTimeout(timeout);
 
         XmlRpcClient client = new XmlRpcClient();
         client.setConfig(config);
