@@ -2,6 +2,7 @@ package com.github.marsik.utils.bugzilla;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,12 @@ public class BugProxy {
 
     public String get(String key) {
         return (String)map.get(key);
+    }
+
+    public Date getDate(String key) { return getAs(key, Date.class); }
+
+    public Date getLastChangeTime() {
+        return getDate("last_change_time");
     }
 
     @SuppressWarnings("unchecked")
