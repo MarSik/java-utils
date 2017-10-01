@@ -11,39 +11,43 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BugProxy {
-    private final Map<String, Object> map;
+    private final Bug bug;
     private final Set<BugzillaBugFlag> flags = new HashSet<>();
 
-    public BugProxy(Map<String, Object> map) {
-        this.map = map;
+    public BugProxy(Bug bug) {
+        this.bug = bug;
+    }
+
+    public Bug getBug() {
+        return bug;
     }
 
     public String getCommunity() {
-        return (String) map.getOrDefault("classification", "");
+        return (String) bug.getOrDefault("classification", "");
     }
 
     public String getId() {
-        return (String)map.get("id").toString();
+        return (String) bug.get("id").toString();
     }
 
     public String getSummary() {
-        return (String)map.get("summary");
+        return (String) bug.get("summary");
     }
 
     public String getDescription() {
-        return (String)map.get("description");
+        return (String) bug.get("description");
     }
 
     public String getStatus() {
-        return (String)map.get("status");
+        return (String) bug.get("status");
     }
 
     public String getSeverity() {
-        return (String)map.get("severity");
+        return (String) bug.get("severity");
     }
 
     public String getPriority() {
-        return (String)map.get("priority");
+        return (String) bug.get("priority");
     }
 
     public List<String> getVerified() {
@@ -51,7 +55,7 @@ public class BugProxy {
     }
 
     public String get(String key) {
-        return (String)map.get(key);
+        return (String) bug.get(key);
     }
 
     public Date getDate(String key) { return getAs(key, Date.class); }
@@ -62,26 +66,25 @@ public class BugProxy {
 
     @SuppressWarnings("unchecked")
     private <T> T getAs(String key, Class<T> cls) {
-        return (T)map.get(key);
+        return bug.getAs(key, cls);
     }
 
     @SuppressWarnings("unchecked")
     private <T> List<T> getList(String key) {
-        T[] val = (T[])map.get(key);
-        return Optional.ofNullable(val).map(Arrays::asList).orElse(Collections.emptyList());
+        return bug.getList(key);
     }
 
     public String getAssignedTo() {
-        return (String)map.get("assigned_to");
+        return (String) bug.get("assigned_to");
     }
 
     public String getTargetRelease() {
-        return (String) firstValue(map.get("target_release"));
+        return (String) firstValue(bug.get("target_release"));
     }
 
 
     public String getTargetMilestone() {
-        return (String) firstValue(map.get("target_milestone"));
+        return (String) firstValue(bug.get("target_milestone"));
     }
 
     private Object firstValue(Object value) {
@@ -115,10 +118,10 @@ public class BugProxy {
     }
 
     public String getPmScore() {
-        return (String)map.get("cf_pm_score");
+        return (String) bug.get("cf_pm_score");
     }
 
     public String getWhiteBoard() {
-        return (String)map.get("whiteboard");
+        return (String) bug.get("whiteboard");
     }
 }

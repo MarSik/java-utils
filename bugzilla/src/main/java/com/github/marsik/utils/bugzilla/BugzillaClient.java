@@ -136,34 +136,40 @@ public class BugzillaClient {
     }
 
     @SuppressWarnings("unchecked")
-    public Iterable<BugProxy> searchBugs(Multimap<String, Object> params) {
+    public Iterable<Bug> searchBugs(Multimap<String, Object> params) {
         checkLoggedIn();
         CallDictResult ret = new Call("Bug.search")
                 .arguments(params)
                 .call();
 
-        Collection<Map<String,Object>> bugs = ret.getList("bugs")
-                .stream().map(o -> (Map<String, Object>)o).collect(Collectors.toList());
+        Collection<Bug> bugs = ret.getList("bugs")
+                .stream()
+                .map(o -> (Map<String, Object>)o)
+                .map(Bug::new)
+                .collect(Collectors.toList());
 
-        return bugs.stream().map(BugProxy::new).collect(Collectors.toList());
+        return bugs;
     }
 
     @SuppressWarnings("unchecked")
-    public Iterable<BugProxy> getBugs(Collection<String> ids) {
+    public Iterable<Bug> getBugs(Collection<String> ids) {
         checkLoggedIn();
         CallDictResult ret = new Call("Bug.get")
                 .argument("ids", new ArrayList<>(ids))
                 .argument("permissive", true)
                 .call();
 
-        Collection<Map<String,Object>> bugs = ret.getList("bugs")
-                .stream().map(o -> (Map<String, Object>)o).collect(Collectors.toList());
+        Collection<Bug> bugs = ret.getList("bugs")
+                .stream()
+                .map(o -> (Map<String, Object>)o)
+                .map(Bug::new)
+                .collect(Collectors.toList());
 
-        return bugs.stream().map(BugProxy::new).collect(Collectors.toList());
+        return bugs;
     }
 
     @SuppressWarnings("unchecked")
-    public Iterable<BugProxy> getExtra(Collection<String> ids) {
+    public Iterable<Bug> getExtra(Collection<String> ids) {
         checkLoggedIn();
         CallDictResult ret = new Call("Bug.get")
                 .argument("ids", new ArrayList<>(ids))
@@ -174,14 +180,17 @@ public class BugzillaClient {
                 .argument("include_fields", "external_bugs")
                 .call();
 
-        Collection<Map<String,Object>> bugs = ret.getList("bugs")
-                .stream().map(o -> (Map<String, Object>)o).collect(Collectors.toList());
+        Collection<Bug> bugs = ret.getList("bugs")
+                .stream()
+                .map(o -> (Map<String, Object>)o)
+                .map(Bug::new)
+                .collect(Collectors.toList());
 
-        return bugs.stream().map(BugProxy::new).collect(Collectors.toList());
+        return bugs;
     }
 
     @SuppressWarnings("unchecked")
-    public List<CallDictResult> getComments(Collection<String> bzIds, Instant since) {
+    public CallDictResult getComments(Collection<String> bzIds, Instant since) {
         checkLoggedIn();
         Call call = new Call("Bug.comments")
                 .argument("ids", new ArrayList<>(bzIds))
@@ -193,13 +202,7 @@ public class BugzillaClient {
 
         CallDictResult ret = call.call();
 
-        CallDictResult bugs = ret.get("bugs");
-        List<CallDictResult> comments = new ArrayList<>();
-
-        return bugs.keySet().stream()
-                .map(k -> bugs.get(k).getDictList("comments"))
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
+        return ret.getDict("bugs");
     }
 
     @SuppressWarnings("unchecked")

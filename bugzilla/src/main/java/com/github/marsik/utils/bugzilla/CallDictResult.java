@@ -2,6 +2,7 @@ package com.github.marsik.utils.bugzilla;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,18 +11,30 @@ import java.util.stream.Collectors;
 
 import lombok.Value;
 
-@Value
-public class CallDictResult {
-    Map<String, Object> map;
+public class CallDictResult extends HashMap<String, Object> {
+    public CallDictResult(int initialCapacity, float loadFactor) {
+        super(initialCapacity, loadFactor);
+    }
+
+    public CallDictResult(int initialCapacity) {
+        super(initialCapacity);
+    }
+
+    public CallDictResult() {
+    }
+
+    public CallDictResult(Map<? extends String, ?> m) {
+        super(m);
+    }
 
     @SuppressWarnings("unchecked")
     public <T> T getAs(String key, Class<T> cls) {
-        return (T)map.get(key);
+        return (T)get(key);
     }
 
     @SuppressWarnings("unchecked")
     public <T> List<T> getList(String key) {
-        T[] val = (T[])map.get(key);
+        T[] val = (T[])get(key);
         return Optional.ofNullable(val).map(Arrays::asList).orElse(Collections.emptyList());
     }
 
@@ -35,11 +48,7 @@ public class CallDictResult {
     }
 
     @SuppressWarnings("unchecked")
-    public CallDictResult get(String key) {
-        return new CallDictResult((Map<String, Object>)map.get(key));
-    }
-
-    public Set<String> keySet() {
-        return map.keySet();
+    public CallDictResult getDict(String key) {
+        return new CallDictResult((Map<String, Object>)get(key));
     }
 }
