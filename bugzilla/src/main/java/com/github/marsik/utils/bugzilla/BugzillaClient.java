@@ -152,11 +152,12 @@ public class BugzillaClient {
     }
 
     @SuppressWarnings("unchecked")
-    public Iterable<Bug> getBugs(Collection<String> ids) {
+    public Iterable<Bug> getBugs(Collection<String> ids, Multimap<String, Object> params) {
         checkLoggedIn();
         CallDictResult ret = new Call("Bug.get")
                 .argument("ids", new ArrayList<>(ids))
                 .argument("permissive", true)
+                .arguments(params)
                 .call();
 
         Collection<Bug> bugs = ret.getList("bugs")
@@ -168,7 +169,11 @@ public class BugzillaClient {
         return bugs;
     }
 
-    @SuppressWarnings("unchecked")
+    public Iterable<Bug> getBugs(Collection<String> ids) {
+        return getBugs(ids, ArrayListMultimap.create(0, 0));
+    }
+
+        @SuppressWarnings("unchecked")
     public Iterable<Bug> getExtra(Collection<String> ids) {
         checkLoggedIn();
         CallDictResult ret = new Call("Bug.get")
