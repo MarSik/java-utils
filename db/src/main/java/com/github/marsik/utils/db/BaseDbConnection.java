@@ -25,8 +25,15 @@ public class BaseDbConnection<D extends DataSource> {
     }
 
     public void updateDatabase() {
+        updateDatabase(false);
+    }
+
+    public void updateDatabase(boolean fix) {
         Flyway flyway = new Flyway();
         flyway.setDataSource(dataSource);
+        if (fix) {
+            flyway.repair();
+        }
         flyway.migrate();
     }
 
