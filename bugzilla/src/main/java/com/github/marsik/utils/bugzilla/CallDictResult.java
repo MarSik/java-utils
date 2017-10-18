@@ -1,6 +1,7 @@
 package com.github.marsik.utils.bugzilla;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +35,16 @@ public class CallDictResult extends HashMap<String, Object> {
 
     @SuppressWarnings("unchecked")
     public <T> List<T> getList(String key) {
-        T[] val = (T[])get(key);
+        final Object raw = get(key);
+        if (raw == null) {
+            return Collections.emptyList();
+        } else if (raw instanceof Collection) {
+            return Collections.unmodifiableList((List<T>) raw);
+        } else if (!raw.getClass().isArray()) {
+            return (List<T>)Collections.singletonList(raw);
+        }
+
+        T[] val = (T[]) raw;
         return Optional.ofNullable(val).map(Arrays::asList).orElse(Collections.emptyList());
     }
 

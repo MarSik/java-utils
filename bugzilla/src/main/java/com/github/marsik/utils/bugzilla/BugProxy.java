@@ -1,6 +1,7 @@
 package com.github.marsik.utils.bugzilla;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -98,9 +99,13 @@ public class BugProxy {
 
     @SuppressWarnings("unchecked")
     public void loadFlags(BugProxy data) {
-        for (Object flag0: data.getList("flags")) {
+        final List<String> flags = data.getList("flags").stream()
+                .map(v -> (Arrays.asList(((String)v).split(" +"))))
+                .flatMap(Collection::stream).collect(Collectors.toList());
+
+        for (Object flag0: flags) {
             Map<String,Object> flag = (Map<String,Object>)flag0;
-            flags.add(new BugzillaBugFlag(flag));
+            this.flags.add(new BugzillaBugFlag(flag));
         }
     }
 
@@ -109,12 +114,15 @@ public class BugProxy {
     }
 
     public List<String> getKeywords() {
-        return getList("keywords");
+        return getList("keywords").stream()
+                .map(v -> (Arrays.asList(((String)v).split(" +"))))
+                .flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     public List<String> getBlocks() {
         return getList("blocks").stream()
-                .map(String::valueOf).collect(Collectors.toList());
+                .map(v -> (Arrays.asList((v.toString()).split(" +"))))
+                .flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     public String getPmScore() {
