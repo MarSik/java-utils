@@ -29,7 +29,7 @@ public class Bug extends CallDictResult {
                if (oldValue != null) {
                    ((Collection) value).remove(oldValue);
                }
-               if (newValue != null) {
+               if (newValue != null && !newValue.toString().trim().isEmpty()) {
                    ((Collection) value).add(newValue);
                }
                return value;
