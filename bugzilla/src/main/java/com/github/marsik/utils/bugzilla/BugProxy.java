@@ -1,5 +1,8 @@
 package com.github.marsik.utils.bugzilla;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,7 +62,18 @@ public class BugProxy {
         return (String) bug.get(key);
     }
 
-    public Date getDate(String key) { return getAs(key, Date.class); }
+    public Date getDate(String key)
+    {
+        Object val = getAs(key, Object.class);
+        if (val instanceof Date) {
+            return (Date)val;
+        } else if (val instanceof String) {
+            TemporalAccessor acc = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse((String)val);
+            return Date.from(Instant.from(acc));
+        }
+
+        throw new IllegalArgumentException("Unknown date format " + val.toString());
+    }
 
     public Date getLastChangeTime() {
         return getDate("last_change_time");
