@@ -139,6 +139,12 @@ public class BugProxy {
                 .flatMap(Collection::stream).collect(Collectors.toList());
     }
 
+    public List<String> getDependsOn() {
+        return getList("depends_on").stream()
+                .map(v -> (Arrays.asList((v.toString()).split(" +"))))
+                .flatMap(Collection::stream).collect(Collectors.toList());
+    }
+
     public String getPmScore() {
         return (String) bug.get("cf_pm_score");
     }
